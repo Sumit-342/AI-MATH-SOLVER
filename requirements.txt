@@ -1,0 +1,6 @@
+sympy
+google-genai
+python-dotenv
+streamlit
+groq
+openai
