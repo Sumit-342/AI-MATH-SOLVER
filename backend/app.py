@@ -31,15 +31,35 @@ def extract_difficulty(text):
     return cleaned_text, difficulty
 
 
-def get_plot_equation(ptype, question, solution):
-    """Return a plottable equation string or None"""
-    if ptype == "equation":
-        cleaned = clean_input(question)
-        # remove = 0 if present, return left side
-        if "=" in cleaned:
-            return cleaned.split("=")[0].strip()
-        return cleaned
-    return None
+
+def get_plot_equation(question):
+
+    q = question.lower().replace(" ", "")
+
+    try:
+
+        if "y=" in q:
+            parts = q.split("y=")
+            if len(parts) > 1:
+                return parts[1]
+
+        if "f(x)=" in q:
+            parts = q.split("f(x)=")
+            if len(parts) > 1:
+                return parts[1]
+
+        if "=" in q:
+            return q.split("=")[0]
+
+        return q
+
+    except Exception as e:
+
+        print("Plot extraction error:", e)
+
+        return None
+
+
 
 def process_math_question(question):
 
@@ -102,8 +122,15 @@ def process_math_question(question):
 
     method = "SymPy + Gemini" if solution != "Could not solve" else "Gemini"
     roots  = str(solution)    if solution != "Could not solve" else "N/A"
+   
+    clean_question = question.lower().replace(" ","")
 
-    plot_eq = get_plot_equation(ptype, question, solution)
+    if "y" in clean_question:
+        roots = "N/A"
+        method = "Calculus"
+    
+    plot_eq = get_plot_equation( question)
+    print("plot eqn",plot_eq)
 
     return {
         "answer": final_output,

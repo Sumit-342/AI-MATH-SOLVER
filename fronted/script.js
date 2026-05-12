@@ -596,7 +596,19 @@ function plotEquation(eqString) {
     const xVals = [];
     const yVals = [];
 
-    // compile equation using math.js
+    
+
+    eqString = eqString
+    .replace(/\*\*/g, '^')
+    .replace(/\*/g, '');
+
+  if (eqString.includes('=')) {
+    eqString = eqString.split('=')[0];
+  }
+
+  console.log("Equation:", eqString);
+
+  // compile equation using math.js
     const expr = math.compile(eqString);
 
     // generate points
@@ -620,6 +632,7 @@ function plotEquation(eqString) {
 
       }
     }
+    
 
     // graph layout
     const layout = {
@@ -657,8 +670,6 @@ function plotEquation(eqString) {
           family: 'JetBrains Mono'
         },
 
-        scaleanchor: "x",
-        scaleratio: 1
       },
 
       showlegend: false
@@ -844,20 +855,30 @@ function renderRealSolution(data, question) {
   }
 
  // graph
-if (data.plot_equation && data.problem_type === 'equation') {
+
+if (data.plot_equation) {
+
+  console.log("PLOT EQ:", data.plot_equation);
+
   plotEquation(data.plot_equation);
+
 } else {
+
   D.graphLabel.textContent = '—';
   D.graphEq.textContent    = 'N/A';
-  D.graphBody.innerHTML    = `<div class="graph-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-      <path d="M2 20l5-8 4 4 4-7 5 5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span>No graph for this type</span>
-  </div>`;
+
+  D.graphBody.innerHTML = `
+    <div class="graph-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M2 20l5-8 4 4 4-7 5 5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+      </svg>
+      <span>No graph for this type</span>
+    </div>`;
 }
 
-  showSolution();
+showSolution();
 }
 
 function applyMeta(data, question) {
