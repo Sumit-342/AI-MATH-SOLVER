@@ -598,13 +598,14 @@ function plotEquation(eqString) {
 
     
 
-    eqString = eqString
-    .replace(/\*\*/g, '^')
-    .replace(/\*/g, '');
+ eqString = eqString
+  .replace(/²/g, '^2')
+  .replace(/³/g, '^3');
 
-  if (eqString.includes('=')) {
-    eqString = eqString.split('=')[0];
-  }
+if ((eqString.match(/y/g) || []).length > 1) {
+  console.log("Skipping unsupported graph");
+  return;
+}
 
   console.log("Equation:", eqString);
 

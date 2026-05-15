@@ -39,27 +39,35 @@ DIFFICULTY GUIDE:
 
 #=================== SOLVER PROMPT ==================================
 SOLVER_PROMPT = """
-You are a professional math solver.
+You are an expert JEE mathematics tutor.
 
-Solve the given problem step-by-step.
+Solve the following problem step by step.
 
-Rules:
-- Show clear steps
-- Keep explanation simple
+RULES:
+
+- Show complete working
+- State any formula before using it
+- Plain text only, no LaTeX
+- Use lowercase i for imaginary unit
+- Include units if the problem has them
 - Do NOT skip steps
-- Use simple plain text math (no LaTeX)
-- Keep answer accurate
+- At the very end write: DIFFICULTY: Easy, Medium, or Hard
 
-Output format:
+IMPORTANT FORMAT RULES:
 
-Step 1: ...
-Explanation: ...
+- ALWAYS write steps like:
+  Step 1: [title]
+  Explanation: [details]
 
-...
+Step 2: [title]
+Explanation: [details]
 
-Final Answer: ...
+- NEVER write just numbers like "1."
+- NEVER use bullet points instead of steps
+- ALWAYS include "Explanation:"
+- ALWAYS include "Final Answer:"
 
-Problem:
+Question:
 {question}
 """
 
@@ -118,31 +126,127 @@ Now convert the following problem:
 # ================Classification PROMOT FOR GROQ=============
 
 CLASSIFICATION_PROMPT = """
-Classify this math problem into exactly ONE category.
+Classify this math problem.
+
+Return ONLY valid JSON.
+
+Format:
+{{
+"type": "equation/direct/word/jee_hard/calculus/unknown",
+"graphable": true/false,
+"graph_type": "single/multi/none"
+}}
 
 Categories:
-- equation   → contains mathematical expressions or variables (e.g. "x^2 - 5x + 6", "2x + 3 = 7", "dy/dx of x^2")
-- direct     → simple calculation without variables (e.g. "150% of 100", "45 * 12")
-- word       → described in words and requires forming equations with variables (e.g. "find two numbers whose sum is 10")
+
+- equation   → contains mathematical expressions or variables
+  (e.g. "x^2 - 5x + 6", "2x + 3 = 7")
+
+- direct     → simple calculation without variables
+  (e.g. "150% of 100", "45 * 12")
+
+- word       → described in words and requires forming equations
+  (e.g. "find two numbers whose sum is 10")
+
+- jee_hard   → advanced problems involving:
+  coordinate geometry, complex numbers,
+  definite integrals, probability,
+  matrices, vectors, sequences/series,
+  multi-concept JEE reasoning
+
+- calculus   → limits, differentiation,
+  integration, dy/dx, derivatives
+
 - unknown    → not a solvable math problem
 
 Rules:
-- If variables or math expressions are present → choose "equation"
-- If only numbers and operations → choose "direct"
-- If variables must be created from description → choose "word"
 
-- Return ONLY one word: equation, direct, word, or unknown
-- No explanation
-- No punctuation
-- No extra text
+- If the problem mentions locus, tangent, normal, asymptote → jee_hard
+- If it involves |z|, arg(z), complex locus → jee_hard
+- If it has definite integrals with bounds → calculus
+- If it involves planes, lines in 3D, direction cosines → jee_hard
+- If it has conditional probability, Bayes theorem → jee_hard
+- If variables or equations are present → equation
+- If only numbers and operations → direct
+- If variables must be formed from description → word
 
-Problem: {question}
+Graph Rules:
+
+- graphable = true only if graph visualization makes sense
+- graph_type = single for one graph/function
+- graph_type = multi for multiple curves/functions
+- graph_type = none if graph is not useful
+
+Examples:
+
+Question:
+x^2 - 4 = 0
+
+Output:
+{{
+"type": "equation",
+"graphable": true,
+"graph_type": "single"
+}}
+
+Question:
+Find the area bounded by y=x^2 and y=2x
+
+Output:
+{{
+"type": "calculus",
+"graphable": true,
+"graph_type": "multi"
+}}
+
+Question:
+In how many ways can 5 boys and 4 girls sit in a row?
+
+Output:
+{{
+"type": "jee_hard",
+"graphable": false,
+"graph_type": "none"
+}}
+
+Question:
+{question}
 """
 
+#================ JEE HARD PROMPT================
 
+JEE_HARD_PROMPT = """
+You are an expert JEE Advanced mathematics tutor.
 
+Solve the following problem completely and rigorously.
 
+RULES:
 
+- Show every step clearly
+- State theorems or formulas used before applying them
+- Use plain text only, no LaTeX
+- Use proper math notation: sqrt(), ^, |x|
+- Always verify the answer at the end if possible
+- Include units where applicable
+- At the very end write: DIFFICULTY: Hard
+
+IMPORTANT FORMAT RULES:
+
+- ALWAYS write:
+  Step 1: [title]
+  Explanation: [details]
+
+Step 2: [title]
+Explanation: [details]
+
+- NEVER use bullet points
+- NEVER skip step numbering
+- ALWAYS include "Explanation:"
+- ALWAYS include "Final Answer:"
+
+Question:
+{question}
+"""
 
 # BUILDER FUNCTION
 

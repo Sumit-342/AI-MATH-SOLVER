@@ -1,7 +1,8 @@
 import re
-from prompts import CLASSIFICATION_PROMPT,EXPLANATION_PROMPT,SOLVER_PROMPT,CONVERSION_PROMPT
+from prompts import CLASSIFICATION_PROMPT,EXPLANATION_PROMPT,SOLVER_PROMPT,CONVERSION_PROMPT, JEE_HARD_PROMPT
 from google import genai
 from sympy import N
+import json
 
 def clean_input(q):
     q = q.strip()       # removing extra space
@@ -42,27 +43,33 @@ def is_word_problem(question):
     return any(word in question.lower() for word in ["find","what","number","sum","product","subtract","difference"])
 
 
-def classify_problem(question,client):
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+
+def classify_problem(question, groq_client):
+
+    prompt = CLASSIFICATION_PROMPT.format(question=question)
+
+    response = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
         messages=[
-            {
-                "role": "user",
-                "content": CLASSIFICATION_PROMPT.format(question=question)
-            }
+            {"role": "user", "content": prompt}
         ],
         temperature=0
     )
 
-    result = response.choices[0].message.content.strip().lower()
+    text = response.choices[0].message.content.strip()
 
-    valid = ["equation", "direct", "word", "unknown"]
+    print("RAW CLASSIFIER:", text)
 
-    for v in valid:
-        if v in result:
-            return v
+    try:
+        return json.loads(text)
+    except Exception as e:
+        print("Classification JSON error:", e)
 
-    return "unknown"
+        return {
+            "type": "unknown",
+            "graphable": False,
+            "graph_type": "none"
+        }
 
 
 def explain_with_fallback(prompt, gemini_client, groq_client):
@@ -162,3 +169,16 @@ def format_solution(solution):
         return f"Exact: {exact}\nApprox: {approx}"
     except:
         return str(solution)
+    
+def solve_jee_with_gemini(question, gemini_client):
+    prompt = JEE_HARD_PROMPT.format(question=question)
+    try:
+        response = gemini_client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        print(f"Gemini JEE solve failed: {e}")
+        return "Could not solve this problem. Please try rephrasing."
+
