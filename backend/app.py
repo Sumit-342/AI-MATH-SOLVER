@@ -33,128 +33,234 @@ def extract_difficulty(text):
 
 
 
-def sanitize_plot_eq(raw: str) -> str | None:
+# def sanitize_plot_eq(raw: str) -> str | None:
+#     if not raw:
+#         return None
+    
+#     raw = raw.strip()
+    
+#     # Reject if it contains these dead giveaways of bad output
+#     bad_patterns = ["from", "to", "where", "curve", "area", " ", "\n", "x="]
+#     for bad in bad_patterns:
+#         if bad in raw.lower():
+#             return None
+    
+#     # Reject if too long (valid expressions are short)
+#     if len(raw) > 50:
+#         return None
+    
+#     # Reject NONE / MULTI
+#     if raw.upper() in ("NONE", "MULTI"):
+#         return None
+    
+#     # Normalize unicode math symbols
+#     raw = raw.replace("√", "sqrt(") 
+#     raw = raw.replace("²", "^2").replace("³", "^3")
+#     raw = raw.replace("×", "*").replace("÷", "/")
+#     raw = raw.replace("−", "-")
+    
+#     # If we added sqrt( without closing ), close it
+#     if raw.count("(") != raw.count(")"):
+#         raw += ")"
+    
+#     # Validate: only allow math characters
+#     if not re.match(r'^[a-zA-Z0-9\+\-\*\/\^\(\)\.\,\_]+$', raw):
+#         return None
+    
+#     return raw
+
+# def get_plot_equation(question, groq_client):
+
+#     prompt = f"""
+
+#     You are a strict math graph extraction engine.
+
+#     Your task:
+#     Extract ONLY a valid mathematical function that can be directly parsed by math.js.
+
+#     STRICT RULES:
+
+#     - Return ONLY the function expression
+#     - No sentences
+#     - No explanations
+#     - No intervals
+#     - No extra text
+#     - No punctuation
+#     - No "from x=..."
+#     - No words like "curve", "area", "graph"
+#     - No variable descriptions
+
+#     VALID OUTPUT EXAMPLES:
+#     x^2
+#     sin(x)
+#     sqrt(x)
+#     x^3-x
+#     2*x+1
+
+#     SPECIAL RULES:
+
+#     - If graph is impossible or not meaningful, return ONLY:
+#     NONE
+
+#     - If the problem requires multiple functions/curves, return ONLY:
+#     MULTI
+
+#     - Convert √x into sqrt(x)
+
+#     - Never include y=
+
+#     - Never include spaces
+
+#     EXAMPLES:
+
+#     Question:
+#     y=x^2
+#     Output:
+#     x^2
+
+#     Question:
+#     Find the graph of y=sin(x)
+#     Output:
+#     sin(x)
+
+#     Question:
+#     Find area under y=√x from x=0 to x=4
+#     Output:
+#     sqrt(x)
+
+#     Question:
+#     Find area bounded by y=x^2 and y=2x
+#     Output:
+#     MULTI
+
+#     Question:
+#     In how many ways can 5 boys and 4 girls sit...
+#     Output:
+#     NONE
+
+#     Question:
+#     {question}
+#     """
+
+#     response = groq_client.chat.completions.create(
+#         model="llama-3.3-70b-versatile",
+#         messages=[
+#             {"role": "user", "content": prompt}
+#         ],
+#         temperature=0
+#     )
+
+#     result = response.choices[0].message.content.strip()
+
+#     print("PLOT EQ:", result)
+
+#     return result
+
+
+
+
+def sanitize_eq(raw: str):
+    """Validate and clean a single equation string."""
     if not raw:
         return None
-    
-    raw = raw.strip()
-    
-    # Reject if it contains these dead giveaways of bad output
-    bad_patterns = ["from", "to", "where", "curve", "area", " ", "\n", "x="]
-    for bad in bad_patterns:
-        if bad in raw.lower():
-            return None
-    
-    # Reject if too long (valid expressions are short)
-    if len(raw) > 50:
+    raw = raw.strip().replace(" ", "")
+    # Reject if contains plain english words (more than 3 letters not math funcs)
+    math_funcs = r'sqrt|sin|cos|tan|log|exp|abs|pi'
+    cleaned = re.sub(math_funcs, '', raw, flags=re.IGNORECASE)
+    if re.search(r'[a-zA-Z]{3,}', cleaned):  # leftover words = bad output
         return None
-    
-    # Reject NONE / MULTI
-    if raw.upper() in ("NONE", "MULTI"):
+    if len(raw) > 60:
         return None
-    
-    # Normalize unicode math symbols
-    raw = raw.replace("√", "sqrt(") 
-    raw = raw.replace("²", "^2").replace("³", "^3")
-    raw = raw.replace("×", "*").replace("÷", "/")
-    raw = raw.replace("−", "-")
-    
-    # If we added sqrt( without closing ), close it
+    # Normalize unicode
+    raw = raw.replace("√", "sqrt(").replace("²", "^2").replace("³", "^3")
+    raw = raw.replace("×", "*").replace("÷", "/").replace("−", "-")
+    # Fix unclosed sqrt( if needed
     if raw.count("(") != raw.count(")"):
-        raw += ")"
-    
-    # Validate: only allow math characters
-    if not re.match(r'^[a-zA-Z0-9\+\-\*\/\^\(\)\.\,\_]+$', raw):
+        raw += ")" * (raw.count("(") - raw.count(")"))
+    # Only allow valid math characters
+    if not re.match(r'^[\w\+\-\*\/\^\(\)\.\,]+$', raw):
         return None
-    
     return raw
 
-def get_plot_equation(question, groq_client):
 
-    prompt = f"""
-
-    You are a strict math graph extraction engine.
-
-    Your task:
-    Extract ONLY a valid mathematical function that can be directly parsed by math.js.
-
-    STRICT RULES:
-
-    - Return ONLY the function expression
-    - No sentences
-    - No explanations
-    - No intervals
-    - No extra text
-    - No punctuation
-    - No "from x=..."
-    - No words like "curve", "area", "graph"
-    - No variable descriptions
-
-    VALID OUTPUT EXAMPLES:
-    x^2
-    sin(x)
-    sqrt(x)
-    x^3-x
-    2*x+1
-
-    SPECIAL RULES:
-
-    - If graph is impossible or not meaningful, return ONLY:
-    NONE
-
-    - If the problem requires multiple functions/curves, return ONLY:
-    MULTI
-
-    - Convert √x into sqrt(x)
-
-    - Never include y=
-
-    - Never include spaces
-
-    EXAMPLES:
-
-    Question:
-    y=x^2
-    Output:
-    x^2
-
-    Question:
-    Find the graph of y=sin(x)
-    Output:
-    sin(x)
-
-    Question:
-    Find area under y=√x from x=0 to x=4
-    Output:
-    sqrt(x)
-
-    Question:
-    Find area bounded by y=x^2 and y=2x
-    Output:
-    MULTI
-
-    Question:
-    In how many ways can 5 boys and 4 girls sit...
-    Output:
-    NONE
-
-    Question:
-    {question}
+def get_plot_equations(ptype, question, solution, groq_client):
     """
+    Always returns a LIST of equation strings (1 or more).
+    Returns [] if nothing can be plotted.
+    """
+    # Word problems rarely have a simple plottable curve
+    if ptype not in ("equation", "direct","calculus","jee_hard"):
+        return []
 
-    response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0
-    )
+    prompt = f"""You are a strict math graph extraction engine.
 
-    result = response.choices[0].message.content.strip()
+Your task: Extract ALL mathematical functions needed to draw the complete graph.
 
-    print("PLOT EQ:", result)
+RULES:
+- Return one function per line
+- No explanations, no words, no sentences
+- No "y=", no "f(x)=", no intervals, no spaces
+- Convert √ to sqrt(), use ^ for powers
+- Each line must be a valid math.js expression
 
-    return result
+SPECIAL RETURNS (one word only):
+- If nothing to plot: NONE
+- Return ALL curves needed (e.g. for intersection problems return both)
+
+EXAMPLES:
+
+Question: plot y = x^2
+Output:
+x^2
+
+Question: Find area between y=x^2 and y=2x
+Output:
+x^2
+2*x
+
+Question: Draw y=sin(x) and y=cos(x)
+Output:
+sin(x)
+cos(x)
+
+Question: Find roots of x^2 - 5x + 6 = 0
+Output:
+x^2-5*x+6
+
+Question: In how many ways can 5 boys sit...
+Output:
+NONE
+
+Question: {question}
+Output:"""
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        raw = response.choices[0].message.content.strip()
+        print("PLOT EQ RAW:", raw)
+
+        if raw.upper() == "NONE":
+            return []
+
+        # Split into lines, sanitize each one
+        lines = [line.strip() for line in raw.splitlines() if line.strip()]
+        equations = []
+        for line in lines:
+            clean = sanitize_eq(line)
+            if clean:
+                equations.append(clean)
+
+        print("PLOT EQS FINAL:", equations)
+        return equations
+
+    except Exception as e:
+        print("Plot equation error:", e)
+        return []
+
 
 
 
@@ -326,18 +432,18 @@ def process_math_question(question):
         roots = "N/A"
         method = "Calculus"
     
+    plot_eq = []
 
     if graphable:
 
-        raw_eq = get_plot_equation(question, groq_client)
+        plot_eq = get_plot_equations(
+        ptype,
+        question,
+        solution,
+        groq_client
+    )
 
-        plot_eq = sanitize_plot_eq(raw_eq)
-
-        print("SANITIZED PLOT EQ:", plot_eq)
-
-    else:
-
-        plot_eq = None
+    print("FINAL PLOT EQS:", plot_eq)
 
     return {
         "answer": final_output,
@@ -348,5 +454,5 @@ def process_math_question(question):
         "roots":     roots,
         "solver":  "SymPy + Gemini",
         "tip":     "-",
-        "plot_equation": plot_eq   
+        "plot_equation": plot_eq
     }
