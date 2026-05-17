@@ -7,3 +7,5 @@ openai
 fastapi
 uvicorn
 plotly
+aiofiles
+python-multipart
