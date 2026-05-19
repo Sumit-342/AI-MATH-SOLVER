@@ -391,6 +391,9 @@ function bindEvents() {
       btn.classList.add('active');
     })
   );
+
+  // ── Image upload ──
+  initImageUpload();
 }
 
 /* ── Swipe-to-close helper ── */
@@ -585,173 +588,391 @@ async function solveProblem(q) {
   }
 }
 
+// function plotEquation(eqString) {
 
-function plotEquation(eqString) {
+// // Prevent invalid graph requests
+// if (!eqString || eqString === 'NONE' || eqString === 'MULTI') {
 
-  D.graphBody.innerHTML =
-    '<div id="plotDiv" style="width:100%;height:240px;"></div>';
+// D.graphBody.innerHTML = `
+//   <div class="graph-placeholder">
+//     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+//       <path d="M2 20l5-8 4 4 4-7 5 5"
+//         stroke-linecap="round"
+//         stroke-linejoin="round"/>
+//     </svg>
+//     <span>No graph for this problem</span>
+//   </div>`;
 
-  try {
+// return;
 
-    const xVals = [];
-    const yVals = [];
+// }
 
-    
+// // sanitize equation
+// eqString = eqString.trim().replace(/\s+/g, '');
 
- eqString = eqString
-  .replace(/²/g, '^2')
-  .replace(/³/g, '^3');
+// // reject suspicious text
+// if (
+// eqString.length > 80 ||
+// /[a-z]{4,}/i.test(
+// eqString.replace(/sqrt|sin|cos|tan|log|exp|abs/gi, '')
+// )
+// ) {
 
-if ((eqString.match(/y/g) || []).length > 1) {
-  console.log("Skipping unsupported graph");
-  return;
-}
+// D.graphBody.innerHTML = `
+//   <div class="graph-placeholder">
+//     <span>Could not parse equation</span>
+//   </div>`;
 
-  console.log("Equation:", eqString);
+// return;
 
-  // compile equation using math.js
-    const expr = math.compile(eqString);
+// }
 
-    // generate points
-    for (let x = -6; x <= 6; x += 0.05) {
+// D.graphBody.innerHTML =
+// '<div id="plotDiv" style="width:100%;height:240px;"></div>';
 
-      xVals.push(x);
+// try {
 
+// const xVals = [];
+// const yVals = [];
+
+// eqString = eqString
+//   .replace(/²/g, '^2')
+//   .replace(/³/g, '^3');
+
+// if ((eqString.match(/y/g) || []).length > 1) {
+//   console.log("Skipping unsupported graph");
+//   return;
+// }
+
+// console.log("Equation:", eqString);
+
+// // compile equation using math.js
+// const expr = math.compile(eqString);
+
+// // smart graph range
+// let xStart = -6;
+// let xEnd = 6;
+
+// // avoid invalid domains
+// if (
+// eqString.includes('sqrt') ||
+// eqString.includes('log')
+// ) {
+// xStart = 0.001;
+// }
+
+// // generate points
+// for (let x = xStart; x <= xEnd; x += 0.05) {
+
+// xVals.push(x);
+
+// try {
+
+// const y = expr.evaluate({ x });
+
+// yVals.push(
+//   isFinite(y) && Math.abs(y) < 1000
+//     ? y
+//     : null
+// );
+
+// } catch {
+
+// yVals.push(null);
+
+// }
+// }
+// // graph layout
+// const layout = {
+
+//   autosize: true,
+
+//   paper_bgcolor: 'transparent',
+//   plot_bgcolor: 'transparent',
+
+//   margin: {
+//     t: 10,
+//     b: 35,
+//     l: 40,
+//     r: 10
+//   },
+
+//   xaxis: {
+//     color: '#5b638f',
+//     gridcolor: '#1a1c2e',
+//     zerolinecolor: '#5b4fff',
+
+//     tickfont: {
+//       size: 10,
+//       family: 'JetBrains Mono'
+//     }
+//   },
+
+//   yaxis: {
+//     color: '#5b638f',
+//     gridcolor: '#1a1c2e',
+//     zerolinecolor: '#5b4fff',
+
+//     tickfont: {
+//       size: 10,
+//       family: 'JetBrains Mono'
+//     },
+
+//   },
+
+//   showlegend: false
+// };
+
+// const config = {
+//   displayModeBar: false,
+//   responsive: true,
+//   staticPlot: false
+// };
+
+// // create empty graph
+// Plotly.newPlot(
+//   'plotDiv',
+//   [{
+//     x: [],
+//     y: [],
+//     type: 'scatter',
+//     mode: 'lines',
+
+//     line: {
+//       color: '#7c5cff',
+//       width: 4,
+//       shape: 'spline',
+//       smoothing: 1.2
+//     },
+
+//     hoverinfo: 'none',
+//     connectgaps: false
+//   }],
+//   layout,
+//   config
+// );
+
+// // animate graph slowly
+// let i = 0;
+
+// const interval = setInterval(() => {
+
+//   Plotly.extendTraces(
+//     'plotDiv',
+//     {
+//       x: [[xVals[i]]],
+//       y: [[yVals[i]]]
+//     },
+//     [0]
+//   );
+
+//   i++;
+
+//   if (i >= xVals.length) {
+
+//     clearInterval(interval);
+
+//     // glow effect
+//     Plotly.restyle('plotDiv', {
+//       line: [{
+//         color: '#9d8cff',
+//         width: 5
+//       }]
+//     });
+//   }
+
+// }, 10);
+
+// // labels
+// D.graphLabel.textContent = 'y = f(x)';
+// D.graphEq.textContent = `y = ${eqString}`;
+
+// } catch (err) {
+
+// console.error(err);
+
+// D.graphBody.innerHTML = `
+//   <div class="graph-placeholder">
+//     Could not plot this equation
+//   </div>
+// `;
+
+// }
+// }
+// Color palette for multiple curves
+const TRACE_COLORS = [
+  '#7c5cff',  // indigo  (primary)
+  '#f472b6',  // pink    (secondary)
+  '#34d399',  // green   (third)
+  '#fbbf24',  // amber   (fourth)
+  '#60a5fa',  // blue    (fifth)
+];
+
+function plotEquation(equations) {
+  // Accept both a single string (legacy) and an array
+  if (!equations) return showGraphPlaceholder('No graph for this problem');
+  if (typeof equations === 'string') equations = [equations];
+  if (!Array.isArray(equations) || equations.length === 0) return showGraphPlaceholder('No graph for this problem');
+
+  D.graphBody.innerHTML = '<div id="plotDiv" style="width:100%;height:280px;"></div>';
+
+  // ── Build one trace per equation ──────────────────────────
+  const traces = [];
+
+  for (let t = 0; t < equations.length; t++) {
+    const eqStr = equations[t].trim();
+    if (!eqStr) continue;
+
+    // Smart x-range: start from 0 for sqrt/log
+    const xStart = /sqrt|log/.test(eqStr) ? 0.001 : -8;
+    const xEnd   = 8;
+    const xVals  = [];
+    const yVals  = [];
+
+    let expr;
+    try {
+      expr = math.compile(eqStr);
+    } catch (e) {
+      console.warn('Could not compile:', eqStr, e);
+      continue;  // skip bad equation, keep drawing others
+    }
+
+    for (let x = xStart; x <= xEnd; x += 0.05) {
+      xVals.push(parseFloat(x.toFixed(4)));
       try {
-
         const y = expr.evaluate({ x });
-
-        yVals.push(
-          isFinite(y) && Math.abs(y) < 1000
-            ? y
-            : null
-        );
-
+        yVals.push(isFinite(y) && Math.abs(y) < 1e4 ? parseFloat(y.toFixed(6)) : null);
       } catch {
-
         yVals.push(null);
-
       }
     }
-    
 
-    // graph layout
-    const layout = {
-
-      autosize: true,
-
-      paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent',
-
-      margin: {
-        t: 10,
-        b: 35,
-        l: 40,
-        r: 10
+    traces.push({
+      x: xVals,
+      y: yVals,
+      type: 'scatter',
+      mode: 'lines',
+      name: `y = ${eqStr}`,           // shows in legend for multi
+      line: {
+        color: TRACE_COLORS[t % TRACE_COLORS.length],
+        width: t === 0 ? 3 : 2.5,     // primary slightly thicker
+        shape: 'spline',
+        smoothing: 1.1,
       },
+      hovertemplate: `y = ${eqStr}<br>x: %{x:.2f}<br>y: %{y:.2f}<extra></extra>`,
+      connectgaps: false,
+    });
+  }
 
-      xaxis: {
-        color: '#5b638f',
-        gridcolor: '#1a1c2e',
-        zerolinecolor: '#5b4fff',
+  if (traces.length === 0) return showGraphPlaceholder('Could not parse equation');
 
-        tickfont: {
-          size: 10,
-          family: 'JetBrains Mono'
-        }
-      },
+  // ── Layout ────────────────────────────────────────────────
+  const layout = {
+    autosize: true,
+    paper_bgcolor: 'transparent',
+    plot_bgcolor:  'transparent',
+    margin: { t: 10, b: 35, l: 40, r: 10 },
+    showlegend: traces.length > 1,     // only show legend for multiple curves
+    legend: {
+      font:    { color: '#818cf8', size: 10, family: 'JetBrains Mono' },
+      bgcolor: 'rgba(13,14,26,0.8)',
+      bordercolor: '#1e2035',
+      borderwidth: 1,
+      x: 0.01, y: 0.99,
+      xanchor: 'left', yanchor: 'top',
+    },
+    xaxis: {
+      color:         '#5b638f',
+      gridcolor:     '#1a1c2e',
+      zerolinecolor: '#4f46e5',
+      zerolinewidth: 1.5,
+      tickfont: { size: 9, family: 'JetBrains Mono', color: '#5b638f' },
+    },
+    yaxis: {
+      color:         '#5b638f',
+      gridcolor:     '#1a1c2e',
+      zerolinecolor: '#4f46e5',
+      zerolinewidth: 1.5,
+      tickfont: { size: 9, family: 'JetBrains Mono', color: '#5b638f' },
+    },
+  };
 
-      yaxis: {
-        color: '#5b638f',
-        gridcolor: '#1a1c2e',
-        zerolinecolor: '#5b4fff',
+  const config = {
+    displayModeBar: false,
+    responsive:     true,
+  };
 
-        tickfont: {
-          size: 10,
-          family: 'JetBrains Mono'
-        },
+  // ── Plot all traces at once ───────────────────────────────
+// Create empty traces first
+const animatedTraces = traces.map(trace => ({
+...trace,
+x: [],
+y: []
+}));
 
-      },
+Plotly.newPlot(
+'plotDiv',
+animatedTraces,
+layout,
+config
+).then(() => {
 
-      showlegend: false
-    };
+let i = 0;
 
-    const config = {
-      displayModeBar: false,
-      responsive: true,
-      staticPlot: false
-    };
+const maxLen = Math.max(...traces.map(t => t.x.length));
 
-    // create empty graph
-    Plotly.newPlot(
+const interval = setInterval(() => {
+
+traces.forEach((trace, idx) => {
+
+  if (i < trace.x.length) {
+
+    Plotly.extendTraces(
       'plotDiv',
-      [{
-        x: [],
-        y: [],
-        type: 'scatter',
-        mode: 'lines',
-
-        line: {
-          color: '#7c5cff',
-          width: 4,
-          shape: 'spline',
-          smoothing: 1.2
-        },
-
-        hoverinfo: 'none',
-        connectgaps: false
-      }],
-      layout,
-      config
+      {
+        x: [[trace.x[i]]],
+        y: [[trace.y[i]]]
+      },
+      [idx]
     );
 
-    // animate graph slowly
-    let i = 0;
-
-    const interval = setInterval(() => {
-
-      Plotly.extendTraces(
-        'plotDiv',
-        {
-          x: [[xVals[i]]],
-          y: [[yVals[i]]]
-        },
-        [0]
-      );
-
-      i++;
-
-      if (i >= xVals.length) {
-
-        clearInterval(interval);
-
-        // glow effect
-        Plotly.restyle('plotDiv', {
-          line: [{
-            color: '#9d8cff',
-            width: 5
-          }]
-        });
-      }
-
-    }, 10);
-
-    // labels
-    D.graphLabel.textContent = 'y = f(x)';
-    D.graphEq.textContent = `y = ${eqString}`;
-
-  } catch (err) {
-
-    console.error(err);
-
-    D.graphBody.innerHTML = `
-      <div class="graph-placeholder">
-        Could not plot this equation
-      </div>
-    `;
   }
+
+});
+
+i++;
+
+if (i >= maxLen) {
+  clearInterval(interval);
+
+  // Optional glow after animation
+  Plotly.restyle('plotDiv', {
+    'line.width': traces.map((_, idx) =>
+      idx === 0 ? 4 : 3
+    )
+  });
 }
 
+}, 15); // animation speed
+
+});
+
+  
+
+  // ── Labels ────────────────────────────────────────────────
+  D.graphLabel.textContent = traces.length > 1 ? `${traces.length} curves` : 'y = f(x)';
+  D.graphEq.textContent    = equations.join(', ');
+}
+
+function showGraphPlaceholder(msg) {
+  D.graphBody.innerHTML = `
+    <div class="graph-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M2 20l5-8 4 4 4-7 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>${msg}</span>
+    </div>`;
+}
 
 /* ══════════════════════════════════════════
    RENDER
@@ -857,26 +1078,41 @@ function renderRealSolution(data, question) {
 
  // graph
 
-if (data.plot_equation) {
+// if (data.plot_equation) {
 
-  console.log("PLOT EQ:", data.plot_equation);
+//   console.log("PLOT EQ:", data.plot_equation);
 
-  plotEquation(data.plot_equation);
+//   plotEquation(data.plot_equation);
+
+// } else {
+
+//   D.graphLabel.textContent = '—';
+//   D.graphEq.textContent    = 'N/A';
+
+//   D.graphBody.innerHTML = `
+//     <div class="graph-placeholder">
+//       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+//         <path d="M2 20l5-8 4 4 4-7 5 5"
+//           stroke-linecap="round"
+//           stroke-linejoin="round"/>
+//       </svg>
+//       <span>No graph for this type</span>
+//     </div>`;
+// }
+
+// showSolution();
+// }
+
+if (data.plot_equation && data.plot_equation.length > 0) {
+
+console.log("PLOT EQ:", data.plot_equation);
+
+plotEquation(data.plot_equation);
 
 } else {
 
-  D.graphLabel.textContent = '—';
-  D.graphEq.textContent    = 'N/A';
+showGraphPlaceholder('No graph for this problem');
 
-  D.graphBody.innerHTML = `
-    <div class="graph-placeholder">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-        <path d="M2 20l5-8 4 4 4-7 5 5"
-          stroke-linecap="round"
-          stroke-linejoin="round"/>
-      </svg>
-      <span>No graph for this type</span>
-    </div>`;
 }
 
 showSolution();
@@ -1068,6 +1304,166 @@ function showToast(msg) {
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2800);
 }
+
+
+/* ══════════════════════════════════════════
+   IMAGE UPLOAD MODULE
+══════════════════════════════════════════ */
+
+const IMG = {
+  dropzone:    document.getElementById('imgDropzone'),
+  fileInput:   document.getElementById('imgFileInput'),
+  dropContent: document.getElementById('imgDropContent'),
+  previewWrap: document.getElementById('imgPreviewWrap'),
+  preview:     document.getElementById('imgPreview'),
+  removeBtn:   document.getElementById('imgRemoveBtn'),
+  solveBtn:    document.getElementById('imgSolveBtn'),
+  ocrBadge:    document.getElementById('imgOcrBadge'),
+  ocrText:     document.getElementById('imgOcrText'),
+};
+
+let currentImageFile = null;
+
+const MAX_IMG_SIZE_MB = 5;
+const ACCEPTED_TYPES  = ['image/png', 'image/jpeg', 'image/jpg'];
+
+function initImageUpload() {
+  // click dropzone → open file picker
+  IMG.dropzone.addEventListener('click', (e) => {
+    if (e.target === IMG.removeBtn || IMG.removeBtn.contains(e.target)) return;
+    IMG.fileInput.click();
+  });
+
+  // file selected via picker
+  IMG.fileInput.addEventListener('change', () => {
+    if (IMG.fileInput.files[0]) handleImageFile(IMG.fileInput.files[0]);
+  });
+
+  // drag and drop
+  IMG.dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    IMG.dropzone.classList.add('drag-over');
+  });
+  IMG.dropzone.addEventListener('dragleave', () => {
+    IMG.dropzone.classList.remove('drag-over');
+  });
+  IMG.dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    IMG.dropzone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageFile(file);
+  });
+
+  // remove image
+  IMG.removeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    clearImageUpload();
+  });
+
+  // solve image
+  IMG.solveBtn.addEventListener('click', handleImageSolve);
+}
+
+function handleImageFile(file) {
+  // validate type
+  if (!ACCEPTED_TYPES.includes(file.type)) {
+    showToast('Only PNG, JPG images are supported');
+    return;
+  }
+
+  // validate size
+  if (file.size > MAX_IMG_SIZE_MB * 1024 * 1024) {
+    showToast(`Image must be under ${MAX_IMG_SIZE_MB}MB`);
+    return;
+  }
+
+  currentImageFile = file;
+
+  // show preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    IMG.preview.src        = e.target.result;
+    IMG.dropContent.style.display  = 'none';
+    IMG.previewWrap.style.display  = '';
+    IMG.ocrBadge.style.display     = 'none';
+    IMG.solveBtn.style.display     = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImageUpload() {
+  currentImageFile           = null;
+  IMG.fileInput.value        = '';
+  IMG.preview.src            = '';
+  IMG.dropContent.style.display  = '';
+  IMG.previewWrap.style.display  = 'none';
+  IMG.ocrBadge.style.display     = 'none';
+  IMG.solveBtn.style.display     = 'none';
+}
+
+async function handleImageSolve() {
+  if (!currentImageFile) return;
+
+  // show loading
+  currentQuestion = `[Image: ${currentImageFile.name}]`;
+  closeLeftPanel();
+  showLoading();
+  IMG.solveBtn.disabled = true;
+
+  // start loader animation
+  let si = 0;
+  D.lsItems.forEach(el => el.classList.remove('ls-done', 'ls-active'));
+  if (D.lsItems[0]) D.lsItems[0].classList.add('ls-active');
+  D.loaderSub.textContent = 'Extracting text from image...';
+
+  loadingTimer = setInterval(() => {
+    if (si < D.lsItems.length) {
+      D.lsItems[si].classList.remove('ls-active');
+      D.lsItems[si].classList.add('ls-done');
+      si++;
+      if (si < D.lsItems.length) D.lsItems[si].classList.add('ls-active');
+      D.loaderSub.textContent = LOADING_STEPS_TEXT[si] || 'Finishing up...';
+    }
+  }, 600);
+
+  try {
+    const formData = new FormData();
+    formData.append('file', currentImageFile);
+
+    const response = await fetch('http://127.0.0.1:8000/solve-image', {
+      method: 'POST',
+      body: formData,   // no Content-Type header — browser sets it with boundary
+    });
+
+    const data = await response.json();
+    clearInterval(loadingTimer);
+    IMG.solveBtn.disabled = false;
+
+    if (data.detail || data.error) {
+      showToast(data.detail || data.error);
+      showEmpty();
+      return;
+    }
+
+    // show OCR text so user can verify what was extracted
+    if (data.ocr_text) {
+      IMG.ocrText.textContent       = `OCR: ${data.ocr_text}`;
+      IMG.ocrBadge.style.display    = '';
+      currentQuestion               = data.ocr_text;
+      D.pdEq.textContent            = data.ocr_text;
+    }
+
+    renderRealSolution(data, data.ocr_text || currentImageFile.name);
+
+  } catch (err) {
+    clearInterval(loadingTimer);
+    IMG.solveBtn.disabled = false;
+    console.error('Image solve error:', err);
+    showToast('Could not connect to backend');
+    showEmpty();
+  }
+}
+
 
 /* ══════════════════════════════════════════
    BOOT
