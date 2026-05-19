@@ -4,7 +4,7 @@ from google import genai
 from groq import Groq
 from prompts import EXPLANATION_PROMPT, SOLVER_PROMPT, CONVERSION_PROMPT, build_classification_prompt, build_conversion_prompt, build_explanation_prompt, build_solver_prompt
 from solver import solve_equation, solve_system
-from utils import clean_input, clean_equation_output, is_word_problem, classify_problem, explain_with_fallback, solve_with_fallback, convert_with_fallback, clean_gemini_output, format_solution, solve_jee_with_gemini
+from utils import clean_input, clean_equation_output, is_word_problem, classify_problem, explain_with_fallback, solve_with_fallback, convert_with_fallback, clean_gemini_output, format_solution, solve_jee_with_gemini , beautify_math_text
 import time
 
 load_dotenv()
@@ -444,6 +444,7 @@ def process_math_question(question):
     )
 
     print("FINAL PLOT EQS:", plot_eq)
+    final_output = beautify_math_text(final_output)
 
     return {
         "answer": final_output,

@@ -182,3 +182,233 @@ def solve_jee_with_gemini(question, gemini_client):
         print(f"Gemini JEE solve failed: {e}")
         return "Could not solve this problem. Please try rephrasing."
 
+
+
+
+def beautify_math_text(text: str) -> str:
+    """
+    Beautifies plain-text math notation into readable textbook-style symbols.
+    Safe post-processing only — does NOT change meaning, no LaTeX, no restructuring.
+    """
+
+    if not text or not isinstance(text, str):
+        return text
+
+    # ── SUPERSCRIPT MAP ───────────────────────────────────────
+    SUPERSCRIPT = str.maketrans(
+        "0123456789+-",
+        "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻"
+    )
+
+    def to_superscript(n: str) -> str:
+        """Convert digit string to superscript unicode characters."""
+        return n.translate(SUPERSCRIPT)
+
+    # ── SUBSCRIPT MAP ─────────────────────────────────────────
+    SUBSCRIPT = str.maketrans(
+        "0123456789",
+        "₀₁₂₃₄₅₆₇₈₉"
+    )
+
+    def to_subscript(n: str) -> str:
+        return n.translate(SUBSCRIPT)
+
+    # ================================================================
+    # STEP 1 — Powers / Exponents
+    # x^2 → x²   x^10 → x¹⁰   x^(n+1) skipped (complex exponent)
+    # ================================================================
+
+    # Simple numeric exponents: x^2, x^23, (x+1)^3
+    # Pattern: any char or ) followed by ^ and digits only
+    def replace_simple_power(m):
+        base = m.group(1)     # what's before ^
+        exp  = m.group(2)     # the digits
+        return base + to_superscript(exp)
+
+    text = re.sub(
+        r'(\w|\))\^(\d+)',
+        replace_simple_power,
+        text
+    )
+
+    # e^x → eˣ  (single letter exponent)
+    SUPER_ALPHA = {'x': 'ˣ', 'n': 'ⁿ', 'a': 'ᵃ', 'b': 'ᵇ',
+                   'i': 'ⁱ', 'k': 'ᵏ', 'm': 'ᵐ', 't': 'ᵗ'}
+
+    def replace_letter_power(m):
+        base   = m.group(1)
+        letter = m.group(2)
+        sup    = SUPER_ALPHA.get(letter)
+        # Only replace if we have a unicode superscript for it
+        return (base + sup) if sup else m.group(0)
+
+    text = re.sub(
+        r'(\w|\))\^([a-z])',
+        replace_letter_power,
+        text
+    )
+
+    # ================================================================
+    # STEP 2 — Square roots / nth roots
+    # sqrt(x) → √(x)    sqrt(x+1) → √(x+1)
+    # cbrt(x) → ∛(x)
+    # ================================================================
+
+    text = re.sub(r'\bsqrt\b',  '√',  text, flags=re.IGNORECASE)
+    text = re.sub(r'\bcbrt\b',  '∛',  text, flags=re.IGNORECASE)
+    text = re.sub(r'\bsqrt2\b', '√2', text, flags=re.IGNORECASE)
+
+    # ================================================================
+    # STEP 3 — Greek letters (whole word only, case-sensitive where needed)
+    # Protects words like "alphabet", "beta-testing", "therapist"
+    # ================================================================
+
+    GREEK = {
+        # Lowercase
+        r'\balpha\b':   'α',
+        r'\bbeta\b':    'β',
+        r'\bgamma\b':   'γ',
+        r'\bdelta\b':   'δ',
+        r'\bepsilon\b': 'ε',
+        r'\btheta\b':   'θ',
+        r'\blambda\b':  'λ',
+        r'\bmu\b':      'μ',
+        r'\bnu\b':      'ν',
+        r'\bxi\b':      'ξ',
+        r'\bpi\b':      'π',
+        r'\brho\b':     'ρ',
+        r'\bsigma\b':   'σ',
+        r'\btau\b':     'τ',
+        r'\bphi\b':     'φ',
+        r'\bchi\b':     'χ',
+        r'\bpsi\b':     'ψ',
+        r'\bomega\b':   'ω',
+        r'\beta\b':     'η',    # eta — careful: check after beta
+        # Uppercase
+        r'\bGamma\b':   'Γ',
+        r'\bDelta\b':   'Δ',
+        r'\bTheta\b':   'Θ',
+        r'\bLambda\b':  'Λ',
+        r'\bSigma\b':   'Σ',
+        r'\bPhi\b':     'Φ',
+        r'\bPsi\b':     'Ψ',
+        r'\bOmega\b':   'Ω',
+    }
+
+    for pattern, symbol in GREEK.items():
+        text = re.sub(pattern, symbol, text)
+
+    # ================================================================
+    # STEP 4 — Constants and special values
+    # ================================================================
+
+    # pi/π already handled above
+    text = re.sub(r'\binfinity\b',  '∞',  text, flags=re.IGNORECASE)
+    text = re.sub(r'\binf\b',       '∞',  text, flags=re.IGNORECASE)
+    text = re.sub(r'\-infinity\b',  '-∞', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bE\b',         'e',  text)   # Euler's number uppercase
+
+    # ================================================================
+    # STEP 5 — Comparison and logic operators
+    # Order matters: longer patterns first to avoid partial replacement
+    # ================================================================
+
+    # Arrows — do before single = or > checks
+    text = text.replace('=>',  '⟹')   # logical implies
+    text = text.replace('->',  '→')
+    text = text.replace('<-',  '←')
+    text = text.replace('<=>',  '⟺')
+    text = text.replace('...',  '…')
+
+    # Inequalities — order: <= before <, >= before >
+    text = text.replace('<=',  '≤')
+    text = text.replace('>=',  '≥')
+    text = text.replace('!=',  '≠')
+    text = text.replace('~=',  '≈')
+    text = text.replace('+-',  '±')
+    text = text.replace('+/-', '±')
+
+    # Set / logic symbols
+    text = text.replace('∈',   '∈')   # already unicode, keep
+    text = re.sub(r'\bforall\b', '∀', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bexists\b', '∃', text, flags=re.IGNORECASE)
+    
+
+    # ================================================================
+    # STEP 6 — Multiplication dot
+    # Converts "3 * x" → "3·x" but NOT inside words or URLs
+    # ================================================================
+
+    # Only replace * when surrounded by math tokens (digit/var), not **
+    text = re.sub(
+        r'(?<!\*)(?<![a-zA-Z])\*(?!\*)(?![a-zA-Z])',
+        '·',
+        text
+    )
+    # "2 * x" style with spaces
+    text = re.sub(r'(\d)\s*\*\s*([a-zA-Z])', r'\1·\2', text)
+    text = re.sub(r'([a-zA-Z])\s*\*\s*(\d)', r'\1·\2', text)
+
+    # ================================================================
+    # STEP 7 — Fractions  "1/2" → "½"  (only common ones, safe)
+    # ================================================================
+
+    FRACTIONS = {
+        '1/2': '½',  '1/3': '⅓',  '2/3': '⅔',
+        '1/4': '¼',  '3/4': '¾',  '1/8': '⅛',
+        '3/8': '⅜',  '5/8': '⅝',  '7/8': '⅞',
+    }
+
+    for plain, symbol in FRACTIONS.items():
+        # Only replace when surrounded by spaces or line boundaries
+        # Avoids breaking "http://..." or "127.0.0.1/path"
+        text = re.sub(
+            r'(?<!\w)' + re.escape(plain) + r'(?!\w)',
+            symbol,
+            text
+        )
+
+    # ================================================================
+    # STEP 8 — Absolute value  |x|  stays as-is (already readable)
+    # Integral / summation notation — leave as-is (no safe unicode)
+    # ================================================================
+
+    # ================================================================
+    # STEP 9 — Subscripts  x_1 → x₁   x_n stays as x_n (letter sub)
+    # ================================================================
+
+    def replace_subscript(m):
+        base = m.group(1)
+        sub  = m.group(2)
+        return base + to_subscript(sub)
+
+    text = re.sub(
+        r'([a-zA-Z])_(\d+)',
+        replace_subscript,
+        text
+    )
+
+    # ================================================================
+    # STEP 10 — Degree symbol   "90 degrees" → "90°"
+    # ================================================================
+
+    text = re.sub(r'(\d+)\s*degrees?\b', r'\1°', text, flags=re.IGNORECASE)
+    text = re.sub(r'(\d+)\s*deg\b',      r'\1°', text, flags=re.IGNORECASE)
+
+    # ================================================================
+    # STEP 11 — Tidy up spacing around symbols we just inserted
+    # e.g. "x ² " → "x²"  (no space before superscript)
+    # ================================================================
+
+    # Remove space before superscript/subscript characters
+    text = re.sub(r'\s+([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿˣ])', r'\1', text)
+    text = re.sub(r'\s+([₀₁₂₃₄₅₆₇₈₉])',        r'\1', text)
+
+    # Ensure single space around → ≤ ≥ ≠ ≈ ∈
+    for sym in ['→', '←', '≤', '≥', '≠', '≈', '∈', '∀', '∃', '⟹', '⟺']:
+        text = re.sub(r'\s*' + re.escape(sym) + r'\s*', f' {sym} ', text)
+
+    # Clean up any double spaces introduced
+    text = re.sub(r'  +', ' ', text)
+
+    return text.strip()
