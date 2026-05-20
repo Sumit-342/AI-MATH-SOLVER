@@ -42,6 +42,8 @@ Backend
 AI / Utilities
 
 - Gemini API
+- Groq API
+- OCR.space API
 - SymPy
 - Plotly
 
@@ -107,6 +109,7 @@ Open "index.html" in browser.
 
 ## 📂 Project Structure
 
+```text
 Math-Solver-AI/
 │
 ├── assets/
@@ -127,6 +130,7 @@ Math-Solver-AI/
 │
 ├── requirements.txt
 └── README.md
+```
 
 ---
 
