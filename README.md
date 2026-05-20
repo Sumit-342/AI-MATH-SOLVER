@@ -109,6 +109,10 @@ Open "index.html" in browser.
 
 Math-Solver-AI/
 │
+├── assets/
+│   ├── focus-mode.png
+│   └── graph-view.png
+│
 ├── backend/
 │   ├── main.py
 │   ├── app.py
