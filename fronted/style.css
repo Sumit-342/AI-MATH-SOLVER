@@ -1,8 +1,3 @@
-/* ============================================================
-   AXIOM — AI Math Solver · style.css  v3
-   Fully responsive: desktop → tablet → mobile
-   Fixed contrast on --text3 / --text4 for daylight readability
-============================================================ */
 
 /* ── TOKENS ── */
 :root {
@@ -28,10 +23,7 @@
   --amber:   #fbbf24;
   --red:     #f87171;
 
-  /* ── TEXT SCALE (fixed for contrast) ──
-     All values now pass WCAG AA on --bg / --bg2 in daylight.
-     Old text4 (#2e3455) and text5 (#1a1c2e) were ~1.5:1 — unusable.
-     New minimums: text3 ≥ 4.5:1, text4 ≥ 3:1 on dark bg. */
+
   --text:    #d4d9f0;   /* primary   — was #c8cfe0, slightly brighter */
   --text2:   #a0a8c8;   /* secondary — was #9aa0c0 ✓ */
   --text3:   #6b75a8;   /* tertiary  — was #4b5280, lifted +25% L */
@@ -306,15 +298,15 @@ textarea { font-family: var(--sans); }
   border: 1px solid var(--border2);
   border-radius: var(--radius);
   color: var(--text);
-  font-size: 12.5px; font-family: var(--mono);
-  padding: 12px 13px 30px;
+  font-size: 13.5px; font-family: var(--mono);
+  padding: 13px 14px 32px;
   resize: none; outline: none;
   line-height: 1.7; min-height: 120px;
   transition: border-color 0.22s, box-shadow 0.22s;
 }
 .prob-ta::placeholder {
   color: var(--text5);
-  font-family: var(--sans); font-size: 12px; line-height: 1.7;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.7;
 }
 .prob-ta:focus {
   border-color: var(--indigo2);
@@ -379,10 +371,17 @@ textarea { font-family: var(--sans); }
 }
 .solve-btn:hover::after { transform: translateX(100%); }
 .solve-btn:hover {
-  background: #5b54f0; border-color: var(--indigo3);
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.15), 0 4px 18px rgba(79,70,229,0.3);
+  background: #5b54f0;
+  border-color: var(--indigo3);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 0 4px rgba(99,102,241,0.14),
+    0 10px 28px rgba(79,70,229,0.38),
+    0 0 18px rgba(99,102,241,0.18);
 }
-.solve-btn:active  { transform: scale(0.98); }
+.solve-btn:active  { transform: translateY(0px) scale(0.98); }
 .solve-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* kbd hint */
@@ -595,7 +594,7 @@ textarea { font-family: var(--sans); }
 .step-card:hover { border-color: var(--border3); box-shadow: 0 2px 14px rgba(0,0,0,0.3); transform: translateY(-1px); }
 
 .slabel { font-size: 11px; font-weight: 600; color: var(--indigo3); margin-bottom: 4px; }
-.sdesc  { font-size: 11.5px; color: var(--text3); line-height: 1.65; margin-bottom: 2px; }
+.sdesc  { font-size: 11.5px; color: #b8bfd8; line-height: 1.65; margin-bottom: 2px; }
 
 .eq-box {
   background: var(--bg); border: 1px solid var(--border2);
@@ -688,7 +687,7 @@ textarea { font-family: var(--sans); }
   background: var(--bg2); overflow: hidden;
   transition: border-color var(--t), box-shadow var(--t);
 }
-.graph-card:hover { border-color: #2d2a6e; box-shadow: 0 0 18px rgba(79,70,229,0.1); }
+.graph-card:hover { border-color: #4f46e5; box-shadow: 0 0 24px rgba(79,70,229,0.18), 0 0 10px rgba(99,102,241,0.12); }
 
 .graph-top {
   padding: 9px 11px;
@@ -696,7 +695,7 @@ textarea { font-family: var(--sans); }
   border-bottom: 1px solid var(--border2);
 }
 .graph-label { font-size: 10px; color: var(--text2); letter-spacing: .03em; font-weight: 500; }
-.graph-eq    { font-size: 10px; color: var(--indigo3); font-family: var(--mono); }
+.graph-eq    { font-size: 12px;font-weight: 600; color: #c7ccff; font-family: var(--mono); }
 
 .graph-body  { padding: 4px 0; min-height: 128px; animation: graphReveal 0.35s ease both; }
 .graph-placeholder {
@@ -1016,4 +1015,153 @@ textarea { font-family: var(--sans); }
   background: var(--indigo);
   border-color: var(--indigo2);
   color: #e8eaff;
+}
+
+
+/* ════════════════════════════════════════════
+   FOCUS MODE — Step Cards
+   Premium cinematic step interaction system
+════════════════════════════════════════════ */
+
+/* ── Base transition on every step card ── */
+.step-card {
+  transition:
+    transform      0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity        0.32s ease,
+    border-color   0.32s ease,
+    box-shadow     0.32s ease,
+    background     0.32s ease,
+    filter         0.32s ease;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  outline: none;           /* we draw our own focus ring */
+  border-radius: 10px;
+}
+
+/* ── Hover (no active card selected yet) ── */
+.step-card:hover {
+  transform:    translateY(-3px) scale(1.005);
+  border-color: var(--border3);
+  box-shadow:   0 4px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* ── When focus mode is ON, dim all cards by default ── */
+.steps-container.focus-mode .step-card {
+  opacity:      0.78;
+  filter:       brightness(0.92);
+  transform:    translateY(0) scale(1);
+}
+
+/* Suppress hover-lift while another card is active */
+.steps-container.focus-mode .step-card:hover:not(.step-active) {
+  transform:    translateY(-2px) scale(1.003);
+  opacity:      0.78;
+  filter:       brightness(0.9);
+}
+
+/* ── ACTIVE / focused card ── */
+.steps-container.focus-mode .step-card.step-active {
+  opacity:      1;
+  filter:       brightness(1);
+  transform:    translateY(-10px) scale(1.012);
+  z-index:      10;
+  background:   #111427;           /* slightly brighter than --bg2 */
+  border-color: rgba(99, 102, 241, 0.55);
+  box-shadow:
+    0 0 0 1px  rgba(99, 102, 241, 0.22),
+    0 8px 32px rgba(79, 70, 229,  0.22),
+    0 2px 12px rgba(0, 0, 0,      0.4);
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* ── Keyboard focus ring (accessibility) ── */
+.step-card:focus-visible {
+  outline:        2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 3px;
+}
+
+/* ── Active card: step number badge highlight ── */
+.step-card.step-active .snum {
+  background:   var(--indigo);
+  border-color: var(--indigo2);
+  color:        #e8eaff;
+  box-shadow:   0 0 10px rgba(99, 102, 241, 0.4);
+  transition:   background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ── Active card: step label brighter ── */
+.step-card.step-active .slabel {
+  color: var(--indigo4, #a5b0fb);
+  transition: color 0.3s ease;
+}
+
+/* ── Active card: eq-box gets a stronger accent line ── */
+.step-card.step-active .eq-box {
+  border-color: rgba(99, 102, 241, 0.28);
+  background:   rgba(8, 9, 20, 0.95);
+}
+.step-card.step-active .eq-box::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(99, 102, 241, 0.55),
+    transparent
+  );
+}
+
+/* ── Answer card: never dim, never scale ── */
+.step-wrap:last-child .step-card,
+.ans-card {
+  transition: box-shadow 0.32s ease, border-color 0.32s ease;
+}
+.steps-container.focus-mode .step-wrap:last-child .step-card,
+.steps-container.focus-mode .ans-card {
+  opacity:   1 !important;
+  filter:    brightness(1) !important;
+  transform: none !important;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow:
+      0 0 0 1px rgba(99,102,241,.22),
+      0 8px 32px rgba(79,70,229,.18);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(99,102,241,.35),
+      0 10px 38px rgba(79,70,229,.28);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(99,102,241,.22),
+      0 8px 32px rgba(79,70,229,.18);
+  }
+}
+
+.steps-container.focus-mode {
+  backdrop-filter: blur(2px);
+}
+
+.graph-body canvas{
+  filter: brightness(1.08) contrast(1.08);
+}
+/* ── Mobile: smaller lift to avoid overflow ── */
+@media (max-width: 640px) {
+  .steps-container.focus-mode .step-card.step-active {
+    transform: translateY(-6px) scale(1.008);
+  }
+}
+
+/* ── Reduced motion: respect OS preference ── */
+@media (prefers-reduced-motion: reduce) {
+  .step-card,
+  .steps-container.focus-mode .step-card,
+  .steps-container.focus-mode .step-card.step-active {
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    transform:  none !important;
+  }
 }

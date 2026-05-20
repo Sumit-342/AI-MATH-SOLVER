@@ -1,8 +1,4 @@
-/* ============================================================
-   AXIOM — AI Math Solver · script.js  v3
-   Mobile-responsive: drawer nav, right-panel sheet, FAB
-   Clean DOM cache, reusable helpers
-============================================================ */
+
 'use strict';
 
 /* ══════════════════════════════════════════
@@ -588,217 +584,6 @@ async function solveProblem(q) {
   }
 }
 
-// function plotEquation(eqString) {
-
-// // Prevent invalid graph requests
-// if (!eqString || eqString === 'NONE' || eqString === 'MULTI') {
-
-// D.graphBody.innerHTML = `
-//   <div class="graph-placeholder">
-//     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-//       <path d="M2 20l5-8 4 4 4-7 5 5"
-//         stroke-linecap="round"
-//         stroke-linejoin="round"/>
-//     </svg>
-//     <span>No graph for this problem</span>
-//   </div>`;
-
-// return;
-
-// }
-
-// // sanitize equation
-// eqString = eqString.trim().replace(/\s+/g, '');
-
-// // reject suspicious text
-// if (
-// eqString.length > 80 ||
-// /[a-z]{4,}/i.test(
-// eqString.replace(/sqrt|sin|cos|tan|log|exp|abs/gi, '')
-// )
-// ) {
-
-// D.graphBody.innerHTML = `
-//   <div class="graph-placeholder">
-//     <span>Could not parse equation</span>
-//   </div>`;
-
-// return;
-
-// }
-
-// D.graphBody.innerHTML =
-// '<div id="plotDiv" style="width:100%;height:240px;"></div>';
-
-// try {
-
-// const xVals = [];
-// const yVals = [];
-
-// eqString = eqString
-//   .replace(/²/g, '^2')
-//   .replace(/³/g, '^3');
-
-// if ((eqString.match(/y/g) || []).length > 1) {
-//   console.log("Skipping unsupported graph");
-//   return;
-// }
-
-// console.log("Equation:", eqString);
-
-// // compile equation using math.js
-// const expr = math.compile(eqString);
-
-// // smart graph range
-// let xStart = -6;
-// let xEnd = 6;
-
-// // avoid invalid domains
-// if (
-// eqString.includes('sqrt') ||
-// eqString.includes('log')
-// ) {
-// xStart = 0.001;
-// }
-
-// // generate points
-// for (let x = xStart; x <= xEnd; x += 0.05) {
-
-// xVals.push(x);
-
-// try {
-
-// const y = expr.evaluate({ x });
-
-// yVals.push(
-//   isFinite(y) && Math.abs(y) < 1000
-//     ? y
-//     : null
-// );
-
-// } catch {
-
-// yVals.push(null);
-
-// }
-// }
-// // graph layout
-// const layout = {
-
-//   autosize: true,
-
-//   paper_bgcolor: 'transparent',
-//   plot_bgcolor: 'transparent',
-
-//   margin: {
-//     t: 10,
-//     b: 35,
-//     l: 40,
-//     r: 10
-//   },
-
-//   xaxis: {
-//     color: '#5b638f',
-//     gridcolor: '#1a1c2e',
-//     zerolinecolor: '#5b4fff',
-
-//     tickfont: {
-//       size: 10,
-//       family: 'JetBrains Mono'
-//     }
-//   },
-
-//   yaxis: {
-//     color: '#5b638f',
-//     gridcolor: '#1a1c2e',
-//     zerolinecolor: '#5b4fff',
-
-//     tickfont: {
-//       size: 10,
-//       family: 'JetBrains Mono'
-//     },
-
-//   },
-
-//   showlegend: false
-// };
-
-// const config = {
-//   displayModeBar: false,
-//   responsive: true,
-//   staticPlot: false
-// };
-
-// // create empty graph
-// Plotly.newPlot(
-//   'plotDiv',
-//   [{
-//     x: [],
-//     y: [],
-//     type: 'scatter',
-//     mode: 'lines',
-
-//     line: {
-//       color: '#7c5cff',
-//       width: 4,
-//       shape: 'spline',
-//       smoothing: 1.2
-//     },
-
-//     hoverinfo: 'none',
-//     connectgaps: false
-//   }],
-//   layout,
-//   config
-// );
-
-// // animate graph slowly
-// let i = 0;
-
-// const interval = setInterval(() => {
-
-//   Plotly.extendTraces(
-//     'plotDiv',
-//     {
-//       x: [[xVals[i]]],
-//       y: [[yVals[i]]]
-//     },
-//     [0]
-//   );
-
-//   i++;
-
-//   if (i >= xVals.length) {
-
-//     clearInterval(interval);
-
-//     // glow effect
-//     Plotly.restyle('plotDiv', {
-//       line: [{
-//         color: '#9d8cff',
-//         width: 5
-//       }]
-//     });
-//   }
-
-// }, 10);
-
-// // labels
-// D.graphLabel.textContent = 'y = f(x)';
-// D.graphEq.textContent = `y = ${eqString}`;
-
-// } catch (err) {
-
-// console.error(err);
-
-// D.graphBody.innerHTML = `
-//   <div class="graph-placeholder">
-//     Could not plot this equation
-//   </div>
-// `;
-
-// }
-// }
 // Color palette for multiple curves
 const TRACE_COLORS = [
   '#7c5cff',  // indigo  (primary)
@@ -1078,31 +863,6 @@ function renderRealSolution(data, question) {
 
  // graph
 
-// if (data.plot_equation) {
-
-//   console.log("PLOT EQ:", data.plot_equation);
-
-//   plotEquation(data.plot_equation);
-
-// } else {
-
-//   D.graphLabel.textContent = '—';
-//   D.graphEq.textContent    = 'N/A';
-
-//   D.graphBody.innerHTML = `
-//     <div class="graph-placeholder">
-//       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-//         <path d="M2 20l5-8 4 4 4-7 5 5"
-//           stroke-linecap="round"
-//           stroke-linejoin="round"/>
-//       </svg>
-//       <span>No graph for this type</span>
-//     </div>`;
-// }
-
-// showSolution();
-// }
-
 if (data.plot_equation && data.plot_equation.length > 0) {
 
 console.log("PLOT EQ:", data.plot_equation);
@@ -1190,6 +950,12 @@ function buildSteps(data) {
   });
 
   D.stepsArea.appendChild(buildAnswerCard(data.answer, data.steps.length));
+
+   requestAnimationFrame(() => {
+    // Add the container class so CSS selectors work
+    D.stepsArea.classList.add('steps-container');
+    FocusMode.init(D.stepsArea);
+  });
 }
 
 function buildAnswerCard(answer, totalSteps) {
@@ -1237,6 +1003,7 @@ function showEmpty() {
   vis(D.askCard,      false);
   if (D.mobInfoTrigger) D.mobInfoTrigger.style.display = 'none';
   resetGraph();
+  FocusMode.destroy();
 }
 
 function showLoading() {
@@ -1464,6 +1231,210 @@ async function handleImageSolve() {
   }
 }
 
+
+/* ════════════════════════════════════════════
+   FOCUS MODE — Step Card Interaction
+   Self-contained, event-delegated, accessible
+════════════════════════════════════════════ */
+const FocusMode = (() => {
+
+  // ── State ──────────────────────────────────────────────────
+  let activeCard    = null;   // currently focused .step-card
+  let container     = null;   // .steps-container element (set on init)
+  let isFocusMode   = false;
+
+  // ── Classes ────────────────────────────────────────────────
+  const CLS_ACTIVE    = 'step-active';
+  const CLS_FOCUS     = 'focus-mode';
+  const CLS_CARD      = 'step-card';
+  const CLS_CONTAINER = 'steps-container';
+
+  // ── Activate a specific card ───────────────────────────────
+  function activate(card) {
+    if (!card || !container) return;
+
+    // Same card clicked again → deactivate (toggle off)
+    if (activeCard === card) {
+      deactivate();
+      return;
+    }
+
+    // Deactivate previous without removing focus-mode class
+    if (activeCard) {
+      activeCard.classList.remove(CLS_ACTIVE);
+      activeCard.setAttribute('aria-selected', 'false');
+    }
+
+    // Activate new card
+    activeCard = card;
+    activeCard.classList.add(CLS_ACTIVE);
+    activeCard.setAttribute('aria-selected', 'true');
+
+    // Turn on focus mode if not already
+    if (!isFocusMode) {
+      container.classList.add(CLS_FOCUS);
+      isFocusMode = true;
+    }
+
+    // Smooth scroll — slight delay lets transform start first
+    setTimeout(() => {
+      card.scrollIntoView({
+        behavior: 'smooth',
+        block:    'center',   // don't scroll more than needed
+      });
+    }, 60);
+  }
+
+  // ── Deactivate / restore normal state ─────────────────────
+  function deactivate() {
+    if (activeCard) {
+      activeCard.classList.remove(CLS_ACTIVE);
+      activeCard.setAttribute('aria-selected', 'false');
+      activeCard = null;
+    }
+    if (container) {
+      container.classList.remove(CLS_FOCUS);
+    }
+    isFocusMode = false;
+  }
+
+  // ── Find the closest .step-card from a click target ───────
+  function getCard(target) {
+    // Walk up the DOM from the click target
+    return target.closest(`.${CLS_CARD}`);
+  }
+
+  // ── Check if a card is the answer card (never focusable) ──
+  function isAnswerCard(card) {
+    // The answer card sits inside .step-wrap:last-child
+    const wrap = card.closest('.step-wrap');
+    if (!wrap) return false;
+    // Check if this is the last step-wrap in the container
+    const allWraps = container.querySelectorAll('.step-wrap');
+    return wrap === allWraps[allWraps.length - 1];
+  }
+
+  // ── Event delegation: one listener on the container ───────
+  function onClick(e) {
+    if (
+      e.target.closest('button') || 
+      e.target.closest('a') ||
+      e.target.closest('.no-focus')
+    ) return;
+    const card = getCard(e.target);
+    if (!card)              return;   // click was outside any card
+    if (isAnswerCard(card)) return;   // answer card is not focusable
+    activate(card);
+  }
+
+  // ── Keyboard: Enter / Space to activate, Escape to clear ──
+  function onKeyDown(e) {
+    if (e.key === 'Escape') {
+      deactivate();
+      return;
+    }
+
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = getCard(e.target);
+      if (card && !isAnswerCard(card)) {
+        e.preventDefault();   // prevent page scroll on Space
+        activate(card);
+      }
+    }
+
+    // Arrow keys: navigate between step cards
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!container) return;
+
+      const cards = [
+        ...container.querySelectorAll(`.${CLS_CARD}`)
+      ].filter(c => !isAnswerCard(c));
+
+      if (!cards.length) return;
+
+      const currentIdx = activeCard ? cards.indexOf(activeCard) : -1;
+      let nextIdx;
+
+      if (e.key === 'ArrowDown') {
+        nextIdx = currentIdx < cards.length - 1 ? currentIdx + 1 : 0;
+      } else {
+        nextIdx = currentIdx > 0 ? currentIdx - 1 : cards.length - 1;
+      }
+
+      cards[nextIdx].focus();
+      activate(cards[nextIdx]);
+    }
+  }
+
+  // ── Click outside the container → deactivate ──────────────
+  function onDocClick(e) {
+    if (!isFocusMode) return;
+    if (container && !container.contains(e.target)) {
+      deactivate();
+    }
+  }
+
+  // ── Make all step cards keyboard-focusable ─────────────────
+  function makeAccessible(cards) {
+    cards.forEach((card, i) => {
+      if (isAnswerCard(card)) return;
+      card.setAttribute('tabindex',    '0');
+      card.setAttribute('role',        'option');
+      card.setAttribute('aria-selected','false');
+      card.setAttribute('aria-label',  `Step ${i + 1}`);
+    });
+  }
+
+  // ── Public: init on a container element ───────────────────
+  function init(containerEl) {
+    if (!containerEl) return;
+
+    // Cleanup any previous listeners
+    destroy();
+
+    container = containerEl;
+
+    // Add accessible attrs to all non-answer cards
+    const cards = [...container.querySelectorAll(`.${CLS_CARD}`)];
+    makeAccessible(cards);
+
+    // Attach container role for accessibility
+    container.setAttribute('role', 'listbox');
+    container.setAttribute('aria-label', 'Solution steps');
+
+    // One delegated listener on the container
+    container.addEventListener('click',   onClick);
+    container.addEventListener('keydown', onKeyDown);
+
+    // Document-level click to deactivate when clicking outside
+    document.addEventListener('click', onDocClick, true);
+  }
+
+  // ── Public: re-init after steps are rebuilt (new solution) ─
+  function reinit() {
+    if (!container) return;
+    deactivate();
+    const cards = [...container.querySelectorAll(`.${CLS_CARD}`)];
+    makeAccessible(cards);
+  }
+
+  // ── Public: full cleanup (remove all listeners) ───────────
+  function destroy() {
+    if (container) {
+      container.removeEventListener('click',   onClick);
+      container.removeEventListener('keydown', onKeyDown);
+    }
+    document.removeEventListener('click', onDocClick, true);
+    activeCard  = null;
+    container   = null;
+    isFocusMode = false;
+  }
+
+  // ── Expose public API ──────────────────────────────────────
+  return { init, reinit, destroy, deactivate };
+
+})();
 
 /* ══════════════════════════════════════════
    BOOT
