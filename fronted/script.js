@@ -549,7 +549,7 @@ async function solveProblem(q) {
 
   try {
 
-    const response = await fetch("http://127.0.0.1:8000/solve", {
+    const response = await fetch("https://numiq-backend.onrender.com/solve", {
 
       method: "POST",
 
@@ -1197,7 +1197,7 @@ async function handleImageSolve() {
     const formData = new FormData();
     formData.append('file', currentImageFile);
 
-    const response = await fetch('http://127.0.0.1:8000/solve-image', {
+    const response = await fetch('https://numiq-backend.onrender.com/solve-image', {
       method: 'POST',
       body: formData,   // no Content-Type header — browser sets it with boundary
     });

@@ -1149,6 +1149,8 @@ textarea { font-family: var(--sans); }
 .graph-body canvas{
   filter: brightness(1.08) contrast(1.08);
 }
+
+
 /* ── Mobile: smaller lift to avoid overflow ── */
 @media (max-width: 640px) {
   .steps-container.focus-mode .step-card.step-active {
