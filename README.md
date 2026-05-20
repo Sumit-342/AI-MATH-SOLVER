@@ -55,13 +55,13 @@ Deployment
 ## 📸 Screenshots
 
 ### Main Workspace
-![Main UI](assets/focus-mode.png)
+![Main UI](https://github.com/Sumit-342/AI-MATH-SOLVER/blob/main/assests/main-ui.png)
 
 ### Step Focus Mode
-![Focus Mode](assets/focus-mode.png)
+![Focus Mode](https://github.com/Sumit-342/AI-MATH-SOLVER/blob/main/assests/focus-mode.png)
 
 ### Graph Visualization
-![Graph](assets/graph-view.png)
+![Graph](https://github.com/Sumit-342/AI-MATH-SOLVER/blob/main/assests/graph-view.png)
 ---
 
 ## ⚙️ Local Setup
