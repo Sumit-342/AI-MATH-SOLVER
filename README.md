@@ -2,7 +2,7 @@
 
 «AI-powered math solver with step-by-step explanations, graph visualization, image solving, and a modern interactive UI.»
 
-"Numiq Banner" (https://img.shields.io/badge/AI-Math%20Solver-6366f1?style=for-the-badge)
+![Numiq Banner](https://img.shields.io/badge/AI-Math%20Solver-6366f1?style=for-the-badge)
 
 ---
 
@@ -55,14 +55,13 @@ Deployment
 ## 📸 Screenshots
 
 ### Main Workspace
-![Main UI] (C:\Math-Solver-AI\assests\focus-mode.png)
+![Main UI](assets/focus-mode.png)
 
 ### Step Focus Mode
-![Focus Mode] (C:\Math-Solver-AI\assests\focus-mode.png)
+![Focus Mode](assets/focus-mode.png)
 
 ### Graph Visualization
-![Graph] (C:\Math-Solver-AI\assests\graph-view.png)
-
+![Graph](assets/graph-view.png)
 ---
 
 ## ⚙️ Local Setup
