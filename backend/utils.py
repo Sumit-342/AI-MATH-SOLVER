@@ -116,7 +116,7 @@ def kimi_generate(prompt):
     )
 
     data = response.json()
-
+    print(data)
     return data["choices"][0]["message"]["content"]
 
 def explain_with_fallback(prompt, gemini_client, groq_client):

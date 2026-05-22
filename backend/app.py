@@ -15,6 +15,8 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def extract_difficulty(text):
+    if text is None:
+        return "Could not generate solution","Medium"
     """Pull DIFFICULTY line out of Gemini response, return (cleaned_text, difficulty)"""
     difficulty = "Medium"  # default
     lines = text.split('\n')
