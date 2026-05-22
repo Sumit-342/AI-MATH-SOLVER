@@ -76,7 +76,7 @@ def classify_problem(question, groq_client):
 
 
 
-def kimi_generate(prompt):
+def kimi_generate(prompt,thinking = False):
 
     invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
 
@@ -100,14 +100,16 @@ def kimi_generate(prompt):
                 "content": prompt
             }
         ],
-        "max_tokens": 7000,
-        "temperature": 0.2,
+        "max_tokens": 1200 if not thinking else 7000,
+        "temperature": 0.1,
         "top_p": 1.0,
         "stream": False,
-        "chat_template_kwargs": {
+       
+    }
+    if thinking :
+         payload["chat_template_kwargs"]={
             "thinking": True
         }
-    }
 
     response = requests.post(
         invoke_url,
@@ -126,14 +128,14 @@ def kimi_generate(prompt):
         )
     return message["content"]
 
-def explain_with_fallback(prompt, gemini_client, groq_client):
+def explain_with_fallback(prompt, gemini_client, groq_client, thinking= False):
     try:
         # response = gemini_client.models.generate_content(
         #     model="gemini-2.5-flash",
         #     contents=prompt
         # )
         # return response.text
-        return kimi_generate(prompt)
+        return kimi_generate(prompt,thinking=thinking)
 
     except Exception:
         print("Gemini failed, switching to Groq.....")
@@ -145,7 +147,7 @@ def explain_with_fallback(prompt, gemini_client, groq_client):
     
 
 
-def solve_with_fallback(question, gemini_client, groq_client):
+def solve_with_fallback(question, gemini_client, groq_client,thinking = False):
     prompt = SOLVER_PROMPT.format(question=question)
 
     try:
@@ -154,7 +156,7 @@ def solve_with_fallback(question, gemini_client, groq_client):
         #     contents=prompt
         # )
         # return response.text
-        return kimi_generate(prompt)
+        return kimi_generate(prompt,thinking=thinking)
 
     except:
         print("Gemini failed, switching to Groq...")
@@ -179,7 +181,7 @@ def convert_with_fallback(question, gemini_client, groq_client):
         #     contents=prompt
         # )
         # return response.text.strip()
-        return kimi_generate(prompt).strip()
+        return kimi_generate(prompt,thinking=False).strip()
 
     except Exception:
         print("Gemini conversion failed, switching to Groq...")
@@ -227,7 +229,7 @@ def format_solution(solution):
     except:
         return str(solution)
     
-def solve_jee_with_gemini(question, gemini_client):
+def solve_jee_with_gemini(question, gemini_client,thinking = False):
     prompt = JEE_HARD_PROMPT.format(question=question)
     try:
         # response = gemini_client.models.generate_content(
@@ -235,7 +237,7 @@ def solve_jee_with_gemini(question, gemini_client):
         #     contents=prompt
         # )
         # return response.text
-        return kimi_generate(prompt)
+        return kimi_generate(prompt,thinking=thinking)
     except Exception as e:
         print(f"Gemini JEE solve failed: {e}")
         return "Could not solve this problem. Please try rephrasing."

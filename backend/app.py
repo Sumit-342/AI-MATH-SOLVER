@@ -177,7 +177,8 @@ def process_math_question(question):
                 question,
                 # gemini_client,
                 None,
-                groq_client
+                groq_client,
+                thinking=False
             )
 
         else:
@@ -193,7 +194,8 @@ def process_math_question(question):
                 prompt,
                 # gemini_client,
                 None,
-                groq_client
+                groq_client,
+                thinking = False
             )
 
         final_output, difficulty = extract_difficulty(raw_output)
@@ -205,7 +207,8 @@ def process_math_question(question):
             question,
             # gemini_client,
             None,
-            groq_client
+            groq_client, 
+            thinking=False
         )
 
         final_output, difficulty = extract_difficulty(raw_output)
@@ -217,7 +220,8 @@ def process_math_question(question):
             question,
             # gemini_client,
             None,
-            groq_client
+            groq_client,
+            thinking = False
         )
 
         equation = clean_gemini_output(equation)
@@ -234,7 +238,8 @@ def process_math_question(question):
                 question,
                 # gemini_client,
                 None,
-                groq_client
+                groq_client,
+                thinking=False
             )
 
         else:
@@ -250,7 +255,8 @@ def process_math_question(question):
                 prompt,
                 # gemini_client,
                 None,
-                groq_client
+                groq_client,
+                thinking = False
             )
 
         final_output, difficulty = extract_difficulty(raw_output)
@@ -261,7 +267,8 @@ def process_math_question(question):
         raw_output = solve_jee_with_gemini(
             question,
             # gemini_client
-            None
+            None,
+            thinking = True
         )
 
         final_output, difficulty = extract_difficulty(raw_output)
@@ -275,7 +282,8 @@ def process_math_question(question):
             question,
             # gemini_client,
             None,
-            groq_client
+            groq_client,
+            thinking=True
         )
 
         final_output, difficulty = extract_difficulty(raw_output)
