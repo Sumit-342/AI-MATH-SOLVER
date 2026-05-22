@@ -100,7 +100,7 @@ def kimi_generate(prompt):
                 "content": prompt
             }
         ],
-        "max_tokens": 4000,
+        "max_tokens": 7000,
         "temperature": 0.2,
         "top_p": 1.0,
         "stream": False,
@@ -117,7 +117,14 @@ def kimi_generate(prompt):
 
     data = response.json()
     print(data)
-    return data["choices"][0]["message"]["content"]
+    message = data["choices"][0]["message"]
+
+    if message["content"] is None :
+        return message.get(
+            "reasoning_content",
+            "Could not generate solution"
+        )
+    return message["content"]
 
 def explain_with_fallback(prompt, gemini_client, groq_client):
     try:
