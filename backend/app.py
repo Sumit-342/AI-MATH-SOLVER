@@ -174,7 +174,7 @@ def process_math_question(question):
             raw_output = solve_with_fallback(
                 question,
                 # gemini_client,
-                None,-
+                None,
                 groq_client
             )
 
