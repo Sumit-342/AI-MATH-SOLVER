@@ -1,7 +1,8 @@
-import os , re
+import os , re,requests
 from dotenv import load_dotenv
-from google import genai
+# from google import genai
 from groq import Groq
+from openai import OpenAI
 from prompts import EXPLANATION_PROMPT, SOLVER_PROMPT, CONVERSION_PROMPT, build_classification_prompt, build_conversion_prompt, build_explanation_prompt, build_solver_prompt
 from solver import solve_equation, solve_system
 from utils import clean_input, clean_equation_output, is_word_problem, classify_problem, explain_with_fallback, solve_with_fallback, convert_with_fallback, clean_gemini_output, format_solution, solve_jee_with_gemini , beautify_math_text
@@ -9,7 +10,7 @@ import time
 
 load_dotenv()
 
-gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
@@ -172,7 +173,8 @@ def process_math_question(question):
 
             raw_output = solve_with_fallback(
                 question,
-                gemini_client,
+                # gemini_client,
+                None,-
                 groq_client
             )
 
@@ -187,7 +189,8 @@ def process_math_question(question):
 
             raw_output = explain_with_fallback(
                 prompt,
-                gemini_client,
+                # gemini_client,
+                None,
                 groq_client
             )
 
@@ -198,7 +201,8 @@ def process_math_question(question):
 
         raw_output = solve_with_fallback(
             question,
-            gemini_client,
+            # gemini_client,
+            None,
             groq_client
         )
 
@@ -209,7 +213,8 @@ def process_math_question(question):
 
         equation = convert_with_fallback(
             question,
-            gemini_client,
+            # gemini_client,
+            None,
             groq_client
         )
 
@@ -225,7 +230,8 @@ def process_math_question(question):
 
             raw_output = solve_with_fallback(
                 question,
-                gemini_client,
+                # gemini_client,
+                None,
                 groq_client
             )
 
@@ -240,7 +246,8 @@ def process_math_question(question):
 
             raw_output = explain_with_fallback(
                 prompt,
-                gemini_client,
+                # gemini_client,
+                None,
                 groq_client
             )
 
@@ -251,7 +258,8 @@ def process_math_question(question):
 
         raw_output = solve_jee_with_gemini(
             question,
-            gemini_client
+            # gemini_client
+            None
         )
 
         final_output, difficulty = extract_difficulty(raw_output)
@@ -263,7 +271,8 @@ def process_math_question(question):
 
         raw_output = solve_with_fallback(
             question,
-            gemini_client,
+            # gemini_client,
+            None,
             groq_client
         )
 
@@ -286,7 +295,8 @@ def process_math_question(question):
 
         raw_output = solve_with_fallback(
             question,
-            gemini_client,
+            # gemini_client,
+            None,
             groq_client
         )
 
