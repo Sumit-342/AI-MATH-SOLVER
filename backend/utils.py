@@ -171,7 +171,7 @@ def solve_with_fallback(question, gemini_client, groq_client,thinking = False):
         return response.choices[0].message.content
     
 
-def convert_with_fallback(question, gemini_client, groq_client):
+def convert_with_fallback(question, gemini_client, groq_client,thinking = False):
     prompt = CONVERSION_PROMPT.format(question=question)
 
     try:
@@ -181,7 +181,7 @@ def convert_with_fallback(question, gemini_client, groq_client):
         #     contents=prompt
         # )
         # return response.text.strip()
-        return kimi_generate(prompt,thinking=False).strip()
+        return kimi_generate(prompt,thinking=thinking).strip()
 
     except Exception:
         print("Gemini conversion failed, switching to Groq...")
